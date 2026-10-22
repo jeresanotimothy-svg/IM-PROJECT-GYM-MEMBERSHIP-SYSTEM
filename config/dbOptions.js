@@ -1,4 +1,4 @@
-// Database connection settings (from .env locally, or Environment variables on Render)
+require('dotenv').config({ path: process.env.ENV_FILE || '.env' });
 const fs = require('fs');
 const path = require('path');
 
@@ -9,11 +9,22 @@ function sslOptions() {
 
   // CA certificate: downloaded from the Aiven service page (certs/ca.pem) or pasted in DB_SSL_CA
   if (process.env.DB_SSL_CA_FILE) {
-    const file = path.resolve(process.env.DB_SSL_CA_FILE);
-    if (fs.existsSync(file)) options.ca = fs.readFileSync(file, 'utf8');
-    else console.warn('Warning: CA file not found: ' + file);
+    let file = path.resolve(process.env.DB_SSL_CA_FILE);
+    if (!fs.existsSync(file)) {
+      file = path.resolve(__dirname, '..', process.env.DB_SSL_CA_FILE);
+    }
+    if (fs.existsSync(file)) {
+      options.ca = fs.readFileSync(file, 'utf8');
+    } else {
+      console.warn('Warning: CA file not found: ' + file);
+    }
   } else if (process.env.DB_SSL_CA) {
     options.ca = process.env.DB_SSL_CA.replace(/\\n/g, '\n');
+  } else {
+    const defaultCa = path.resolve(__dirname, '..', 'certs', 'ca.pem');
+    if (fs.existsSync(defaultCa)) {
+      options.ca = fs.readFileSync(defaultCa, 'utf8');
+    }
   }
   return options;
 }
@@ -28,7 +39,7 @@ function connectionOptions() {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.DB_PORT) || 3306,
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD,
+    password: process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : '',
     database: process.env.DB_NAME || 'gym_db',
     ssl: sslOptions(),
     dateStrings: true,

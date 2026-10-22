@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "setup-db": "node scripts/setup-db.js"
   },
   "dependencies": {
     "cookie-session": "^2.1.0",
