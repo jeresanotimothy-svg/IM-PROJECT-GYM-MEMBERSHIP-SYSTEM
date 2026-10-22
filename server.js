@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: process.env.ENV_FILE || '.env' });
 process.env.TZ = process.env.TZ || 'Asia/Manila';  // Philippine date
 const crypto = require('crypto');
 const express = require('express');
